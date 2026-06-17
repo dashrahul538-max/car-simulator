@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: car-racing-simulator
+    env: static
+    staticPublishPath: .
+    buildCommand: ""
