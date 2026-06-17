@@ -30,15 +30,180 @@ let musicEl = null;
 let carSprite = null;
 let spriteLoaded = false;
 
-<<<<<<< HEAD
+const STORAGE_KEY = 'car-simulator-users';
+let currentUser = null;
+let loggedIn = false;
+
 let obstacles = [22];
 let spawnTimer = 3;
-=======
-let obstacles = [22];
-let spawnTimer = 3;
->>>>>>> 5ade8c9 (render.yaml)
 let lastTime = 0;
 let colorOffset = 0;
+
+function getUsers(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+}
+
+function saveUsers(users){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+}
+
+function findUser(username){
+  return getUsers().find(u => u.username.toLowerCase() === username.toLowerCase());
+}
+
+function updateUserScore(newScore){
+  if(!currentUser) return;
+  currentUser.last = newScore;
+  currentUser.best = Math.max(currentUser.best || 0, newScore);
+  const users = getUsers();
+  const existingIndex = users.findIndex(u => u.username.toLowerCase() === currentUser.username.toLowerCase());
+  if(existingIndex >= 0){
+    users[existingIndex] = currentUser;
+  } else {
+    users.push(currentUser);
+  }
+  saveUsers(users);
+  renderLeaderboard();
+}
+
+function renderLeaderboard(){
+  const list = document.getElementById('leaderboardList');
+  if(!list) return;
+  const users = getUsers().slice().sort((a,b) => (b.best || 0) - (a.best || 0));
+  const rows = users.slice(0, 10).map((user, index) => {
+    return `
+      <div class="leaderboard-row">
+        <span class="leaderboard-rank">#${index + 1} ${user.username}</span>
+        <span class="leaderboard-score">${user.best || 0}</span>
+      </div>`;
+  }).join('');
+  list.innerHTML = rows || '<div class="leaderboard-row"><span>No scores yet</span><span>0</span></div>';
+}
+
+function showAuthMessage(message, error = true){
+  const authMessage = document.getElementById('authMessage');
+  if(authMessage){
+    authMessage.textContent = message;
+    authMessage.style.color = error ? '#f87171' : '#86efac';
+  }
+}
+
+function showAuthTab(tab){
+  const loginTab = document.getElementById('loginTab');
+  const signupTab = document.getElementById('signupTab');
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  if(tab === 'signup'){
+    loginTab.classList.remove('active');
+    signupTab.classList.add('active');
+    loginForm.classList.add('hidden');
+    signupForm.classList.remove('hidden');
+  } else {
+    signupTab.classList.remove('active');
+    loginTab.classList.add('active');
+    signupForm.classList.add('hidden');
+    loginForm.classList.remove('hidden');
+  }
+  showAuthMessage('');
+}
+
+function setCurrentUser(user){
+  currentUser = user;
+  loggedIn = true;
+  localStorage.setItem('car-simulator-current', user.username);
+  document.getElementById('playerNameLabel').textContent = user.username;
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('ui').classList.remove('hidden');
+  document.getElementById('touch-controls').classList.remove('hidden');
+  document.getElementById('header').classList.remove('hidden');
+  document.getElementById('score').textContent = `Score: ${score}`;
+  renderLeaderboard();
+}
+
+function handleLogin(){
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if(!username || !password){
+    showAuthMessage('Enter username and password.');
+    return;
+  }
+  const user = findUser(username);
+  if(!user || user.password !== password){
+    showAuthMessage('Invalid credentials.');
+    return;
+  }
+  setCurrentUser(user);
+  if(!lastTime){
+    initGame();
+  }
+  showAuthMessage('Login successful!', false);
+}
+
+function handleSignup(){
+  const username = document.getElementById('signupUsername').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  if(!username || !password){
+    showAuthMessage('Please enter a valid username and password.');
+    return;
+  }
+  if(findUser(username)){
+    showAuthMessage('Username already exists.');
+    return;
+  }
+  const user = {username, password, best: 0, last: 0, createdAt: Date.now()};
+  const users = getUsers();
+  users.push(user);
+  saveUsers(users);
+  setCurrentUser(user);
+  if(!lastTime){
+    initGame();
+  }
+  showAuthMessage('Account created. Welcome!', false);
+}
+
+function logout(){
+  currentUser = null;
+  loggedIn = false;
+  localStorage.removeItem('car-simulator-current');
+  window.location.reload();
+}
+
+function initAuth(){
+  document.getElementById('loginTab').addEventListener('click', () => showAuthTab('login'));
+  document.getElementById('signupTab').addEventListener('click', () => showAuthTab('signup'));
+  document.getElementById('loginButton').addEventListener('click', handleLogin);
+  document.getElementById('signupButton').addEventListener('click', handleSignup);
+  document.getElementById('leaderboardToggle').addEventListener('click', () => {
+    document.getElementById('leaderboardPanel').classList.toggle('hidden');
+  });
+  document.getElementById('closeLeaderboard').addEventListener('click', () => {
+    document.getElementById('leaderboardPanel').classList.add('hidden');
+  });
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+  showAuthTab('login');
+  const storedUsername = localStorage.getItem('car-simulator-current');
+  if(storedUsername){
+    const storedUser = findUser(storedUsername);
+    if(storedUser){
+      setCurrentUser(storedUser);
+      if(!lastTime){
+        initGame();
+      }
+    }
+  }
+}
+
+function initGame(){
+  resize();
+  resetPlayer();
+  bindControls();
+  loadSprite();
+  loadAudioAssets();
+  renderLeaderboard();
+  requestAnimationFrame(loop);
+}
+
+window.addEventListener('load', initAuth);
 
 function resize(){
   const width = window.innerWidth;
@@ -251,6 +416,9 @@ function update(t){
     gameOver = true;
     overlay.classList.remove('hidden');
     messageEl.textContent = 'Game Over';
+    if(currentUser){
+      updateUserScore(score);
+    }
     playCrashSound();
   }
 
@@ -432,17 +600,3 @@ function bindControls(){
   });
 }
 
-function init(){
-  resize();
-  resetPlayer();
-  bindControls();
-  loadSprite();
-  loadAudioAssets();
-  requestAnimationFrame(loop);
-}
-
-if(document.readyState === 'complete' || document.readyState === 'interactive'){
-  init();
-} else {
-  window.addEventListener('load', init);
-}

@@ -7,8 +7,53 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="loginScreen" class="overlay">
+    <div class="auth-card">
+      <div class="auth-branding">
+        <div class="auth-title">Rahul Dash</div>
+        <div class="auth-subtitle">Car Racing Simulator Login</div>
+      </div>
+      <div id="authTabs" class="auth-tabs">
+        <button id="loginTab" class="active">Login</button>
+        <button id="signupTab">Sign Up</button>
+      </div>
+      <div id="loginForm" class="auth-form">
+        <label>Username</label>
+        <input id="loginUsername" type="text" autocomplete="username" />
+        <label>Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" />
+        <button id="loginButton">Log In</button>
+      </div>
+      <div id="signupForm" class="auth-form hidden">
+        <label>Username</label>
+        <input id="signupUsername" type="text" autocomplete="username" />
+        <label>Password</label>
+        <input id="signupPassword" type="password" autocomplete="new-password" />
+        <button id="signupButton">Sign Up</button>
+      </div>
+      <div id="authMessage" class="auth-message"></div>
+    </div>
+  </div>
+
+  <div id="leaderboardPanel" class="panel hidden">
+    <div class="panel-header">
+      <h2>Leaderboard</h2>
+      <button id="closeLeaderboard">Close</button>
+    </div>
+    <div id="leaderboardList" class="leaderboard-list"></div>
+  </div>
+
+  <div id="header" class="game-header hidden">
+    <div id="branding">Rahul Dash</div>
+    <div id="playerInfo">Player: <span id="playerNameLabel">Guest</span></div>
+    <div id="headerActions">
+      <button id="leaderboardToggle">Leaderboard</button>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
   <canvas id="gameCanvas"></canvas>
-  <div id="ui">
+  <div id="ui" class="hidden">
     <div id="score">Score: 0</div>
     <div id="controls">
       <button id="toggleSound">Sound: On</button>
@@ -20,7 +65,7 @@
     </div>
   </div>
 
-  <div id="touch-controls">
+  <div id="touch-controls" class="hidden">
     <button id="left">◀</button>
     <button id="accelerate">▲</button>
     <button id="right">▶</button>
