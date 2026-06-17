@@ -30,8 +30,13 @@ let musicEl = null;
 let carSprite = null;
 let spriteLoaded = false;
 
-let obstacles = [];
-let spawnTimer = 0;
+<<<<<<< HEAD
+let obstacles = [22];
+let spawnTimer = 3;
+=======
+let obstacles = [22];
+let spawnTimer = 3;
+>>>>>>> 5ade8c9 (render.yaml)
 let lastTime = 0;
 let colorOffset = 0;
 
